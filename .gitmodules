@@ -1,0 +1,6 @@
+[submodule "LocalPackages/UniTask"]
+	path = LocalPackages/UniTask
+	url = https://github.com/Cysharp/UniTask.git
+[submodule "LocalPackages/YooAsset"]
+	path = LocalPackages/YooAsset
+	url = https://github.com/tuyoogame/YooAsset.git
