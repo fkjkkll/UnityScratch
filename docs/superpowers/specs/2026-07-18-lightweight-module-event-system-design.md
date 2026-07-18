@@ -33,7 +33,7 @@ Interface mappings, constructor injection, scopes, and factories are outside thi
 - Dispose runs modules in reverse registration order. Exceptions are logged and do not prevent remaining modules from being disposed.
 - Cleanup of module collections and generic slots always runs, including when module disposal fails.
 - Dispose is idempotent. After it completes, a subsequent `Get<T>()` may build a fresh repository state.
-- Repository access while disposal is actively in progress throws `InvalidOperationException`.
+- Repository creation, registration, and ticking while disposal is actively in progress throw `InvalidOperationException`. Read-only `TryGet` remains available so module teardown can perform idempotent cleanup.
 
 ## Event System Ownership
 
