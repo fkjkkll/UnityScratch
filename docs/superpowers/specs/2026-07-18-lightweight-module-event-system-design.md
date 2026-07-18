@@ -47,9 +47,19 @@ Subscription rules:
 - Subscribing the same callback twice throws `InvalidOperationException`.
 - Unsubscribing a callback that is not registered is a no-op.
 - `Unsubscribe<T>` uses `IocRepository.TryGet` so teardown code cannot recreate EventModule merely to remove a subscription.
-- Dispatch uses a snapshot of subscribers in subscription order. Subscription changes made during a callback affect the next event, not the event currently being dispatched.
+- Dispatch iterates a stable active-subscriber list in subscription order. Subscription changes made anywhere in a synchronous nested dispatch chain are deferred until the outermost dispatch completes.
 - Each callback is invoked in an independent try/catch. Exceptions are logged through `Debug.LogException`, and remaining callbacks continue.
 - Firing an event without subscribers is valid and has no effect.
+
+### Subscription Mutation Strategy
+
+Each channel owns a reusable active-subscriber list, a reusable pending-change list, and a dispatch-depth counter. Subscribe and unsubscribe modify the active list directly when no event is being dispatched. During dispatch they append a compact add/remove operation to the pending list instead, leaving the active list stable for indexed iteration without allocating a snapshot.
+
+Nested immediate `Fire` calls increment the same depth counter and continue to observe the unchanged active list. When the outermost `Fire` exits, its `finally` path applies pending operations in call order. A callback removed during the chain therefore continues to receive both the current event and any synchronously nested events, but does not receive a later top-level event.
+
+Duplicate-subscription checks evaluate both the active list and queued changes so they continue to fail synchronously. Removing an effectively absent callback remains a no-op. Clearing a channel during dispatch is likewise deferred until the outermost dispatch completes.
+
+The lists retain their capacity. After normal warm-up, subscription mutations allocate only when a list must grow rather than allocating and copying a new subscriber array for every change. This deliberately trades exact C# multicast-delegate behavior during rare nested immediate dispatch for lower allocation pressure under dynamic Unity object lifecycles.
 
 ## Delayed Event Queues
 
@@ -96,7 +106,7 @@ Automated tests cover:
 - update exception isolation;
 - reverse disposal, disposal exception isolation, idempotence, and recreation;
 - safe no-subscriber dispatch and duplicate-subscription rejection;
-- subscriber snapshot behavior and callback exception isolation;
+- stable dispatch-chain behavior, ordered deferred subscription changes, and callback exception isolation;
 - global FIFO ordering across event types;
 - Update/LateUpdate separation;
 - same-phase reentrant enqueue deferral;
