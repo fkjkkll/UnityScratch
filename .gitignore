@@ -12,6 +12,11 @@
 /[Uu]ser[Ss]ettings/
 *.log
 
+# OS-generated files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
 # Rider/JetBrains IDE 配置
 .idea/
 *.iml
@@ -54,6 +59,7 @@ ExportedObj/
 *.csproj
 *.unityproj
 *.sln
+*.slnx
 *.suo
 *.tmp
 *.user
@@ -89,6 +95,7 @@ crashlytics-build.properties
 
 # TestRunner generated files
 InitTestScene*.unity*
+/[Tt]est[Rr]esults/
 
 # Addressables default ignores, before user customizations
 /ServerData
@@ -108,3 +115,6 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+# Auto-generated cache in Assets folder
+/[Aa]ssets/[Ss]ceneDependencyCache*
